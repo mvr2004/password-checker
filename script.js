@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const criteriaList = document.getElementById('criteriaList');
     const examplePasswords = document.querySelectorAll('.example, .example-card');
     const shareButton = document.getElementById('shareBtn');
+    const lengthSlider = document.getElementById('lengthSlider');
+    const lengthValue = document.getElementById('lengthValue');
+    const uppercaseCheck = document.getElementById('uppercaseCheck');
+    const lowercaseCheck = document.getElementById('lowercaseCheck');
+    const numbersCheck = document.getElementById('numbersCheck');
+    const symbolsCheck = document.getElementById('symbolsCheck');
+    const generateBtn = document.getElementById('generateBtn');
 
     // Validation criteria with regex patterns and weights
     const criteria = {
@@ -164,4 +171,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setInterval(rotatePlaceholder, 3000);
     rotatePlaceholder();
+
+    // Updates the slider value when you move it
+    lengthSlider.addEventListener('input', function() {
+        lengthValue.textContent = this.value;
+    });
+
+    // Generates a password when you click the button
+    generateBtn.addEventListener('click', function() {
+        const length = parseInt(lengthSlider.value);
+        const includeUppercase = uppercaseCheck.checked;
+        const includeLowercase = lowercaseCheck.checked;
+        const includeNumbers = numbersCheck.checked;
+        const includeSymbols = symbolsCheck.checked;
+        
+        // Available characters
+        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        // Combine all selected characters
+        let charPool = '';
+        if (includeUppercase) charPool += uppercase;
+        if (includeLowercase) charPool += lowercase;
+        if (includeNumbers) charPool += numbers;
+        if (includeSymbols) charPool += symbols;
+        
+        // If no character type was selected
+        if (charPool === '') {
+            alert('Please select at least one character type!');
+            return;
+        }
+        
+        // Generate the random password
+        let password = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charPool.length);
+            password += charPool[randomIndex];
+        }
+        
+        // Display the generated password
+        passwordInput.value = password;
+        passwordInput.setAttribute('type', 'text');
+        toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        
+        // Automatically check password strength
+        checkPasswordStrength();
+        
+        // Hide the password after 5 seconds
+        setTimeout(() => {
+            passwordInput.setAttribute('type', 'password');
+            toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+        }, 5000);
+    });
+
+
+
 });
