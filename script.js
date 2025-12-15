@@ -15,6 +15,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const numbersCheck = document.getElementById('numbersCheck');
     const symbolsCheck = document.getElementById('symbolsCheck');
     const generateBtn = document.getElementById('generateBtn');
+    const easyRememberCheck = document.getElementById('easyRememberCheck');
+
+
+    const easyWords = {
+        adjectives: ['Happy', 'Brave', 'Quick', 'Smart', 'Bright', 'Calm', 'Cool', 'Fast', 'Good', 'Kind'],
+        nouns: ['Dragon', 'Tiger', 'Eagle', 'Shark', 'Lion', 'Wolf', 'Bear', 'Hawk', 'Fox', 'Cat'],
+        verbs: ['Running', 'Jumping', 'Flying', 'Swimming', 'Dancing', 'Singing', 'Playing', 'Working', 'Coding', 'Learning'],
+        colors: ['Red', 'Blue', 'Green', 'Gold', 'Silver', 'Black', 'White', 'Purple', 'Orange', 'Pink']
+    };
+
+    const easyPatterns = [
+        "{adjective}{noun}{year}{symbol}",
+        "{color}{verb}{number}{symbol}",
+        "{noun}{adjective}{number}{symbol}",
+        "{verb}{color}{year}{symbol}"
+    ];
+
+
 
     // Validation criteria with regex patterns and weights
     const criteria = {
@@ -184,31 +202,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const includeLowercase = lowercaseCheck.checked;
         const includeNumbers = numbersCheck.checked;
         const includeSymbols = symbolsCheck.checked;
+        const easyToRemember = easyRememberCheck.checked;
         
-        // Available characters
-        const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-        const numbers = '0123456789';
-        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        let password;
         
-        // Combine all selected characters
-        let charPool = '';
-        if (includeUppercase) charPool += uppercase;
-        if (includeLowercase) charPool += lowercase;
-        if (includeNumbers) charPool += numbers;
-        if (includeSymbols) charPool += symbols;
-        
-        // If no character type was selected
-        if (charPool === '') {
-            alert('Please select at least one character type!');
-            return;
-        }
-        
-        // Generate the random password
-        let password = '';
-        for (let i = 0; i < length; i++) {
-            const randomIndex = Math.floor(Math.random() * charPool.length);
-            password += charPool[randomIndex];
+        if (easyToRemember) {
+            // Gerar senha fácil de decorar
+            password = generateEasyPassword();
+        } else {
+            // Gerar senha aleatória normal
+            password = generateRandomPassword(length, includeUppercase, includeLowercase, includeNumbers, includeSymbols);
         }
         
         // Display the generated password
@@ -226,6 +229,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     });
 
+    // Função para gerar senhas aleatórias normais
+    function generateRandomPassword(length, uppercase, lowercase, numbers, symbols) {
+        // Available characters
+        const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+        const numberChars = '0123456789';
+        const symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        
+        // Combine all selected characters
+        let charPool = '';
+        if (uppercase) charPool += uppercaseChars;
+        if (lowercase) charPool += lowercaseChars;
+        if (numbers) charPool += numberChars;
+        if (symbols) charPool += symbolChars;
+        
+        // If no character type was selected
+        if (charPool === '') {
+            alert('Please select at least one character type!');
+            return '';
+        }
+        
+        // Generate the random password
+        let password = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * charPool.length);
+            password += charPool[randomIndex];
+        }
+        
+        return password;
+    }
+
+    // Função para gerar senhas fáceis de decorar
+    function generateEasyPassword() {
+        // Selecionar um padrão aleatório
+        const pattern = easyPatterns[Math.floor(Math.random() * easyPatterns.length)];
+        
+        // Gerar os componentes
+        const adjective = easyWords.adjectives[Math.floor(Math.random() * easyWords.adjectives.length)];
+        const noun = easyWords.nouns[Math.floor(Math.random() * easyWords.nouns.length)];
+        const verb = easyWords.verbs[Math.floor(Math.random() * easyWords.verbs.length)];
+        const color = easyWords.colors[Math.floor(Math.random() * easyWords.colors.length)];
+        const year = Math.floor(Math.random() * 30) + 1990; // Ano entre 1990-2020
+        const number = Math.floor(Math.random() * 90) + 10; // Número entre 10-99
+        const symbols = ['!', '@', '#', '$', '%', '&', '*'];
+        const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+        
+        // Substituir placeholders no padrão
+        let password = pattern
+            .replace('{adjective}', adjective)
+            .replace('{noun}', noun)
+            .replace('{verb}', verb)
+            .replace('{color}', color)
+            .replace('{year}', year)
+            .replace('{number}', number)
+            .replace('{symbol}', symbol);
+        
+        return password;
+    }
 
 
 });

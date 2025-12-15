@@ -1,4 +1,3 @@
-/* Reset e Configurações Globais */
 * {
     margin: 0;
     padding: 0;
@@ -326,10 +325,6 @@ body {
 }
 
 
-
-
-
-/* ADICIONAR AO FINAL DO CSS */
 .generator {
     background: #f8f9fa;
     padding: 20px;
@@ -404,6 +399,7 @@ body {
     cursor: pointer;
 }
 
+
 .action-buttons {
     margin-top: 5px;
 }
@@ -426,7 +422,9 @@ body {
     background: #4338ca;
 }
 
-/* Remove o botão copy que estava mal posicionado */
 .btn-copy {
     display: none;
 }
+
+
+
