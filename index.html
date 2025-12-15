@@ -1,150 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDS Password checker</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RDS Password checker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo">
-                <i class="fas fa-lock"></i>
-                <h1>RDS Secure Pass</h1>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <i class="fas fa-lock"></i>
+        <h1>RDS Secure Pass</h1>
+      </div>
+    </header>
+    <main class="main-content">
+      <div class="card">
+        <div class="input-group">
+          <label for="password">
+            <i class="fas fa-key"></i>Enter your password</label>
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Type your password here..." autocomplete="off">
+            <button id="togglePassword" class="toggle-btn">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="hint">
+            <i class="fas fa-lightbulb"></i>Try: <code class="example" data-pass="PxH1#n!8">PxH1#n!8</code> or <code class="example" data-pass="12345678">12345678</code>
+          </div>
+        </div>
+        <div class="strength-meter">
+          <div class="meter-label">
+            <span>Strength:</span>
+            <span id="strengthText">Very Weak</span>
+          </div>
+          <div class="meter-bar">
+            <div id="meterFill" class="meter-fill">
             </div>
-        </header>
-
-        <main class="main-content">
-            <div class="card">
-                <div class="input-group">
-                    <label for="password">
-                        <i class="fas fa-key"></i> Enter your password
-                    </label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" placeholder="Type your password here..." autocomplete="off">
-                        <button id="togglePassword" class="toggle-btn">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div class="hint">
-                        <i class="fas fa-lightbulb"></i>
-                        Try: <code class="example" data-pass="PxH1#n!8">PxH1#n!8</code> or 
-                        <code class="example" data-pass="12345678">12345678</code>
-                    </div>
-                </div>
-
-                <div class="strength-meter">
-                    <div class="meter-label">
-                        <span>Strength:</span>
-                        <span id="strengthText">Very Weak</span>
-                    </div>
-                    <div class="meter-bar">
-                        <div id="meterFill" class="meter-fill"></div>
-                    </div>
-                    <div class="score">
-                        Score: <span id="score">0</span>/10
-                    </div>
-                </div>
-
-                <div class="criteria">
-                    <h3><i class="fas fa-checklist"></i> Requirements</h3>
-                    <ul id="criteriaList">
-                        <li data-criteria="length">
-                            <i class="fas fa-times"></i>
-                            <span>At least 8 characters</span>
-                        </li>
-                        <li data-criteria="uppercase">
-                            <i class="fas fa-times"></i>
-                            <span>At least one uppercase letter</span>
-                        </li>
-                        <li data-criteria="lowercase">
-                            <i class="fas fa-times"></i>
-                            <span>At least one lowercase letter</span>
-                        </li>
-                        <li data-criteria="numbers">
-                            <i class="fas fa-times"></i>
-                            <span>At least one number</span>
-                        </li>
-                        <li data-criteria="special">
-                            <i class="fas fa-times"></i>
-                            <span>At least one special character</span>
-                        </li>
-                        <li data-criteria="noSequences">
-                            <i class="fas fa-times"></i>
-                            <span>No common sequences</span>
-                        </li>
-                    </ul>
-                </div>
-
-                    <div class="generator">
-                        <h3><i class="fas fa-magic"></i> Generate Secure Password</h3>
-                        
-                        <div class="generator-controls">
-                            <div class="slider-container">
-                                <label for="lengthSlider">Length: <span id="lengthValue">8</span> characters</label>
-                                <input type="range" id="lengthSlider" min="8" max="20" value="8" class="slider">
-                            </div>
-                            
-                            <div class="checkboxes">
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="uppercaseCheck" checked>
-                                    <label for="uppercaseCheck">A-Z</label>
-                                </div>
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="lowercaseCheck" checked>
-                                    <label for="lowercaseCheck">a-z</label>
-                                </div>
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="numbersCheck" checked>
-                                    <label for="numbersCheck">0-9</label>
-                                </div>
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="symbolsCheck" checked>
-                                    <label for="symbolsCheck">!@#$</label>
-                                </div>
-                                <div class="checkbox-group">
-                                    <input type="checkbox" id="easyRememberCheck">
-                                    <label for="easyRememberCheck">Easy to Remember</label>
-                                </div>
-                            </div>
-                            
-                            <div class="action-buttons">
-                                <button id="generateBtn" class="btn-primary">
-                                    <i class="fas fa-sync-alt"></i> Generate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                
+          </div>
+          <div class="score">Score:
+            <span id="score"></span>/10</div>
+        </div>
+        <div class="criteria">
+          <h3>
+            <i class="fas fa-checklist"></i>Requirements</h3>
+          <ul id="criteriaList">
+            <li data-criteria="length">
+              <i class="fas fa-times"></i>
+              <span>At least 8 characters</span>
+            </li>
+            <li data-criteria="uppercase">
+              <i class="fas fa-times"></i>
+              <span>At least one uppercase letter</span>
+            </li>
+            <li data-criteria="lowercase">
+              <i class="fas fa-times"></i>
+              <span>At least one lowercase letter</span>
+            </li>
+            <li data-criteria="numbers">
+              <i class="fas fa-times"></i>
+              <span>At least one number</span>
+            </li>
+            <li data-criteria="special">
+              <i class="fas fa-times"></i>
+              <span>At least one special character</span>
+            </li>
+            <li data-criteria="noSequences">
+              <i class="fas fa-times"></i>
+              <span>No common sequences</span>
+            </li>
+          </ul>
+        </div>
+        <div class="generator">
+          <h3>
+            <i class="fas fa-magic"></i>Generate Secure Password</h3>
+          <div class="generator-controls">
+            <div class="slider-container">
+              <label for="lengthSlider">Length:
+                <span id="lengthValue">8</span>characters</label>
+              <input type="range" id="lengthSlider" min="8" max="20" value="8" class="slider">
             </div>
-
-            <div class="examples">
-                <h3><i class="fas fa-vial"></i> Test Examples</h3>
-                <div class="example-grid">
-                    <div class="example-card" data-pass="Password123!">
-                        <div class="example-password">Password123!</div>
-                        <div class="example-strength">Strong</div>
-                    </div>
-                    <div class="example-card" data-pass="hello123">
-                        <div class="example-password">hello123</div>
-                        <div class="example-strength">Weak</div>
-                    </div>
-                    <div class="example-card" data-pass="MyP@ssw0rd!2024">
-                        <div class="example-password">MyP@ssw0rd!2024</div>
-                        <div class="example-strength">Very Strong</div>
-                    </div>
-                </div>
+            <div class="checkboxes">
+              <div class="checkbox-group">
+                <input type="checkbox" id="uppercaseCheck" checked>
+                <label for="uppercaseCheck">A-Z</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="lowercaseCheck" checked>
+                <label for="lowercaseCheck">a-z</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="numbersCheck" checked>
+                <label for="numbersCheck">0-9</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="symbolsCheck" checked>
+                <label for="symbolsCheck">!@#$</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="easyRememberCheck">
+                <label for="easyRememberCheck">Easy to Remember</label>
+              </div>
             </div>
-        </main>
-
-        <footer class="footer">
-            <p>RDS</p>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
+            <div class="action-buttons">
+              <button id="generateBtn" class="btn-primary">
+                <i class="fas fa-sync-alt"></i>Generate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="examples">
+        <h3>
+          <i class="fas fa-vial"></i>Test Examples</h3>
+        <div class="example-grid">
+          <div class="example-card" data-pass="Password123!">
+            <div class="example-password">Password123!</div>
+            <div class="example-strength">Strong</div>
+          </div>
+          <div class="example-card" data-pass="hello123">
+            <div class="example-password">hello123</div>
+            <div class="example-strength">Weak</div>
+          </div>
+          <div class="example-card" data-pass="MyP@ssw0rd!2024">
+            <div class="example-password">MyP@ssw0rd!2024</div>
+            <div class="example-strength">Very Strong</div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <p>RDS</p>
+    </footer>
+  </div>
+  <script src="script.js"></script>
 </body>
+
 </html>
