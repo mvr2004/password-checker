@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
       colors: ['Red', 'Blue', 'Green', 'Gold', 'Silver', 'Black', 'White', 'Purple', 'Orange', 'Pink']
    };
 
-   // Patterns for easy-to-remember passwords
    const easyPatterns = [
       "{adjective}{noun}{year}{symbol}",
       "{color}{verb}{number}{symbol}",
@@ -33,66 +32,163 @@ document.addEventListener('DOMContentLoaded', function () {
       "{verb}{color}{year}{symbol}"
    ];
 
-   // Validation criteria with regex patterns and weights
-   const criteria = {
-      length: {
-         regex: /^.{8,}$/,
-         weight: 2
-      }, // At least 8 characters
-      uppercase: {
-         regex: /[A-Z]/,
-         weight: 1
-      }, // At least one uppercase letter
-      lowercase: {
-         regex: /[a-z]/,
-         weight: 1
-      }, // At least one lowercase letter
-      numbers: {
-         regex: /\d/,
-         weight: 1
-      }, // At least one number
-      special: {
-         regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-         weight: 2
-      }, // Special characters
+   // Common weak passwords to detect
+   const commonWeakPasswords = [
+      'password', '123456', 'qwerty', 'admin', 'welcome', 'monkey', 'dragon',
+      'sunshine', 'password123', 'admin123', '12345678', '123456789', '123123',
+      '111111', 'abc123', 'letmein', 'welcome123', 'passw0rd', 'master'
+   ];
 
-      noSequences: {
-         regex: /^(?!.*(123|234|345|456|567|678|789|012|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|qwerty|asdfgh|zxcvbn))/i,
-         weight: 1
+   // INTELLIGENT PATTERN DETECTION ALGORITHM
+   const PatternDetector = {
+      // Detect repetitive patterns (AaAa, 1212, etc)
+      detectRepetition: function(password) {
+         // Look for repeating sequences
+         for (let len = 2; len <= Math.floor(password.length / 2); len++) {
+            const pattern = password.substring(0, len);
+            const repeated = pattern.repeat(Math.floor(password.length / len));
+            if (password.startsWith(repeated)) {
+               return { detected: true, pattern: pattern, severity: 'high' };
+            }
+         }
+         
+         // Look for partial repetitions (AaAaAa...)
+         for (let len = 2; len <= 4; len++) {
+            for (let i = 0; i <= password.length - len; i++) {
+               const chunk = password.substring(i, i + len);
+               const occurrences = (password.match(new RegExp(chunk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+               if (occurrences >= 3) {
+                  return { detected: true, pattern: chunk, severity: 'medium' };
+               }
+            }
+         }
+         
+         return { detected: false };
+      },
+
+      // Calculate entropy (real randomness)
+      calculateEntropy: function(password) {
+         if (password.length === 0) return 0;
+         
+         const freq = {};
+         for (let char of password) {
+            freq[char] = (freq[char] || 0) + 1;
+         }
+         
+         let entropy = 0;
+         const len = password.length;
+         for (let char in freq) {
+            const p = freq[char] / len;
+            entropy -= p * Math.log2(p);
+         }
+         
+         // Normalize (0-1, where 1 = maximum randomness)
+         const maxEntropy = Math.log2(Math.min(len, 94));
+         return maxEntropy > 0 ? entropy / maxEntropy : 0;
+      },
+
+      // Detect simple alternation patterns (aAbBcC, 1a2b3c)
+      detectAlternation: function(password) {
+         if (password.length < 4) return { detected: false };
+         
+         let patterns = {
+            upperLower: 0,
+            letterDigit: 0
+         };
+         
+         for (let i = 0; i < password.length - 1; i++) {
+            const curr = password[i];
+            const next = password[i + 1];
+            
+            // Uppercase-lowercase alternation
+            if (/[a-z]/.test(curr) && /[A-Z]/.test(next) ||
+                /[A-Z]/.test(curr) && /[a-z]/.test(next)) {
+               patterns.upperLower++;
+            }
+            
+            // Letter-number alternation
+            if (/[a-zA-Z]/.test(curr) && /\d/.test(next) ||
+                /\d/.test(curr) && /[a-zA-Z]/.test(next)) {
+               patterns.letterDigit++;
+            }
+         }
+         
+         // If more than 70% of password follows an alternation pattern
+         const len = password.length - 1;
+         if (patterns.upperLower / len > 0.7 || patterns.letterDigit / len > 0.7) {
+            return { detected: true, type: 'alternation' };
+         }
+         
+         return { detected: false };
+      },
+
+      // Detect common sequences
+      detectSequences: function(password) {
+         const sequences = {
+            numeric: '0123456789',
+            alpha: 'abcdefghijklmnopqrstuvwxyz',
+            keyboard: ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
+         };
+         
+         const lower = password.toLowerCase();
+         
+         // Check for sequences of 3+ characters
+         for (let seqType in sequences) {
+            const seq = sequences[seqType];
+            if (Array.isArray(seq)) {
+               for (let row of seq) {
+                  for (let i = 0; i <= row.length - 3; i++) {
+                     const substr = row.substring(i, i + 3);
+                     if (lower.includes(substr) || lower.includes(substr.split('').reverse().join(''))) {
+                        return { detected: true, type: seqType, sequence: substr };
+                     }
+                  }
+               }
+            } else {
+               for (let i = 0; i <= seq.length - 3; i++) {
+                  const substr = seq.substring(i, i + 3);
+                  if (lower.includes(substr) || lower.includes(substr.split('').reverse().join(''))) {
+                     return { detected: true, type: seqType, sequence: substr };
+                  }
+               }
+            }
+         }
+         
+         return { detected: false };
       }
    };
 
-   // Password strength levels with score ranges, labels and colors
-   const strengthLevels = [{
-         min: 0,
-         max: 2,
-         text: "Very Weak",
-         color: "#ef4444"
-      }, // Red
-      {
-         min: 3,
-         max: 4,
-         text: "Weak",
-         color: "#f97316"
-      }, // Orange
-      {
-         min: 5,
-         max: 6,
-         text: "Fair",
-         color: "#eab308"
-      }, // Yellow
-      {
-         min: 7,
-         max: 8,
-         text: "Strong",
-         color: "#84cc16"
-      }, // Light green
-      {
-         min: 9,
-         max: 10,
-         text: "Very Strong",
-         color: "#10b981"
-      } // Green
+   // Validation criteria with regex patterns and weights - 0-20 POINT SYSTEM
+   const criteria = {
+      length: {
+         regex: /^.{8,}$/,
+         weight: 3  // 3 points
+      },
+      uppercase: {
+         regex: /[A-Z]/,
+         weight: 2  // 2 points
+      },
+      lowercase: {
+         regex: /[a-z]/,
+         weight: 2  // 2 points
+      },
+      numbers: {
+         regex: /\d/,
+         weight: 2  // 2 points
+      },
+      special: {
+         regex: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+         weight: 3  // 3 points
+      }
+   };
+
+   // Password strength levels - 0-20 POINT SYSTEM
+   const strengthLevels = [
+      { min: 0, max: 4, text: "Very Weak", color: "#ef4444" },
+      { min: 5, max: 8, text: "Weak", color: "#f97316" },
+      { min: 9, max: 12, text: "Fair", color: "#eab308" },
+      { min: 13, max: 16, text: "Strong", color: "#84cc16" },
+      { min: 17, max: 20, text: "Very Strong", color: "#10b981" }
    ];
 
    // Toggle password visibility
@@ -123,57 +219,140 @@ document.addEventListener('DOMContentLoaded', function () {
       });
    });
 
-   // Main password strength checking function
+   // Main password strength checking function - 0-20 POINT SYSTEM
    function checkPasswordStrength() {
       const password = passwordInput.value;
       let totalScore = 0;
 
-      console.log("Checking password:", password); // DEBUG
+      // If password is empty
+      if (password.length === 0) {
+         updateUI(0, password);
+         return;
+      }
 
-      // Reset criteria
+      // 0. CHECK FOR COMMON WEAK PASSWORDS
+      if (commonWeakPasswords.includes(password.toLowerCase())) {
+         updateUI(2, password); // 2/20 for very weak passwords
+         return;
+      }
+
+      // Reset criteria display
       document.querySelectorAll('#criteriaList li').forEach(li => {
          li.classList.remove('valid');
          li.querySelector('i').className = 'fas fa-times';
       });
 
-      // Check each criterion
+      // 1. BASE CRITERIA (maximum 12 points - NEVER MORE!)
+      let criteriaScore = 0;
       Object.entries(criteria).forEach(([key, rule]) => {
          const li = document.querySelector(`[data-criteria="${key}"]`);
-
-         // Skip if criterion doesn't exist in HTML
-         if (!li) {
-            console.log(`Criterion ${key} not found in HTML`);
-            return;
-         }
-
-         const icon = li.querySelector('i');
-         const isMatch = rule.regex.test(password);
-
-         console.log(`Criterion ${key}:`, isMatch, "Regex:", rule.regex); // DEBUG
-
-         if (isMatch) {
-            totalScore += rule.weight;
-            li.classList.add('valid');
-            icon.className = 'fas fa-check';
-         } else {
-            icon.className = 'fas fa-times';
+         if (li) {
+            const icon = li.querySelector('i');
+            const isMatch = rule.regex.test(password);
+            
+            if (isMatch) {
+               criteriaScore += rule.weight;
+               li.classList.add('valid');
+               icon.className = 'fas fa-check';
+            } else {
+               icon.className = 'fas fa-times';
+            }
          }
       });
+      totalScore += criteriaScore; // 3+2+2+2+3 = 12 points MAXIMUM
 
-      console.log("Base score:", totalScore); // DEBUG
+      // 2. LENGTH BONUS - 8, 12, 16 characters (maximum 3 points)
+      let lengthScore = 0;
+      if (password.length >= 8) lengthScore += 1;
+      if (password.length >= 12) lengthScore += 1;
+      if (password.length >= 16) lengthScore += 1;
+      // MAXIMUM: 3 points, even if it has more characters
+      lengthScore = Math.min(lengthScore, 3);
+      totalScore += lengthScore; // +3 points = 15 points so far
 
-      // Bonus for length
-      if (password.length >= 12) totalScore += 1;
-      if (password.length >= 16) totalScore += 1;
+      // 3. CHARACTER DIVERSITY (maximum 3 points)
+      const charTypes = {
+         lowercase: /[a-z]/.test(password),
+         uppercase: /[A-Z]/.test(password),
+         numbers: /\d/.test(password),
+         symbols: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+      };
+      
+      const typesCount = Object.values(charTypes).filter(Boolean).length;
+      
+      let diversityScore = 0;
+      if (typesCount === 2) diversityScore = 1;
+      else if (typesCount === 3) diversityScore = 2;
+      else if (typesCount === 4) diversityScore = 3;
+      
+      // MAXIMUM: 3 points
+      diversityScore = Math.min(diversityScore, 3);
+      totalScore += diversityScore; // +3 points = 18 points so far
 
-      console.log("Score with bonuses:", totalScore); // DEBUG
+      // 4. ENTROPY BONUS (maximum 2 points)
+      if (password.length >= 3) {
+         const entropy = PatternDetector.calculateEntropy(password);
+         let entropyBonus = 0;
+         if (entropy > 0.9) entropyBonus = 2;
+         else if (entropy > 0.8) entropyBonus = 1;
+         
+         // MAXIMUM: 2 points
+         entropyBonus = Math.min(entropyBonus, 2);
+         totalScore += entropyBonus; // +2 points = 20 points MAXIMUM
+      }
 
-      // Cap maximum score at 10
-      totalScore = Math.min(totalScore, 10);
+      // 5. PATTERN DETECTION - PENALTIES (can reduce below 0)
+      if (password.length >= 3) {
+         // Repetition
+         const repetition = PatternDetector.detectRepetition(password);
+         if (repetition.detected) {
+            totalScore -= (repetition.severity === 'high' ? 4 : 2);
+         }
+         
+         // Alternation
+         const alternation = PatternDetector.detectAlternation(password);
+         if (alternation.detected) {
+            totalScore -= 3;
+         }
+         
+         // Sequences
+         const sequences = PatternDetector.detectSequences(password);
+         if (sequences.detected) {
+            totalScore -= 3;
+         }
+      }
 
-      console.log("Final score:", totalScore); // DEBUG
+      // 6. SPECIAL CASES
+      // Pure numbers 
+      if (/^\d+$/.test(password)) {
+         totalScore = Math.min(4, totalScore); 
+      }
+      
+      // Pure letters -
+      if (/^[a-zA-Z]+$/.test(password)) {
+         totalScore = Math.min(8, totalScore); 
+      }
+      
+      // Letters + numbers only (no symbols)
+      if (/^[a-zA-Z0-9]+$/.test(password) && !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+         totalScore = Math.min(14, totalScore); 
+      }
 
-      // Update UI
+      // 7. FINAL MAXIMUM LIMIT OF 20 
+      totalScore = Math.max(0, Math.min(totalScore, 20));
+      
+      if (totalScore >= 17 && password.length < 12) {
+         totalScore = 16; 
+      }
+      
+      if (totalScore >= 13 && typesCount < 3) {
+         totalScore = 12; 
+      }
+      
+      if (totalScore >= 17 && !charTypes.symbols) {
+         totalScore = 16; 
+      }
+
       updateUI(totalScore, password);
    }
 
@@ -190,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
       strengthText.style.color = level.color;
 
       // Update progress bar width and color
-      const percentage = (score / 10) * 100;
+      const percentage = (score / 20) * 100;
       meterFill.style.width = `${percentage}%`;
       meterFill.style.backgroundColor = level.color;
 
@@ -227,12 +406,12 @@ document.addEventListener('DOMContentLoaded', function () {
    setInterval(rotatePlaceholder, 3000);
    rotatePlaceholder();
 
-   // Updates the slider value when you move it
+   // Updates the slider value
    lengthSlider.addEventListener('input', function () {
       lengthValue.textContent = this.value;
    });
 
-   // Generates a password when you click the button
+   // Generates a password
    generateBtn.addEventListener('click', function () {
       const length = parseInt(lengthSlider.value);
       const includeUppercase = uppercaseCheck.checked;
@@ -244,50 +423,41 @@ document.addEventListener('DOMContentLoaded', function () {
       let password;
 
       if (easyToRemember) {
-         // Generate easy-to-remember password
          password = generateEasyPassword();
       } else {
-         // Generate normal random password
          password = generateRandomPassword(length, includeUppercase, includeLowercase, includeNumbers, includeSymbols);
       }
 
-      // Display the generated password
       passwordInput.value = password;
       passwordInput.setAttribute('type', 'text');
       toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
 
-      // Automatically check password strength
       checkPasswordStrength();
 
-      // Hide the password after 5 seconds
       setTimeout(() => {
          passwordInput.setAttribute('type', 'password');
          toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
       }, 5000);
    });
 
-   // Function to generate normal random passwords
+   // Generate random password
    function generateRandomPassword(length, uppercase, lowercase, numbers, symbols) {
-      // Available characters
       const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
       const numberChars = '0123456789';
       const symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-      // Combine all selected characters
       let charPool = '';
       if (uppercase) charPool += uppercaseChars;
       if (lowercase) charPool += lowercaseChars;
       if (numbers) charPool += numberChars;
       if (symbols) charPool += symbolChars;
 
-      // If no character type was selected
       if (charPool === '') {
          alert('Please select at least one character type!');
          return '';
       }
 
-      // Generate the random password
       let password = '';
       for (let i = 0; i < length; i++) {
          const randomIndex = Math.floor(Math.random() * charPool.length);
@@ -297,22 +467,19 @@ document.addEventListener('DOMContentLoaded', function () {
       return password;
    }
 
-   // Function to generate easy-to-remember passwords
+   // Generate easy-to-remember password
    function generateEasyPassword() {
-      // Select a random pattern
       const pattern = easyPatterns[Math.floor(Math.random() * easyPatterns.length)];
 
-      // Generate components
       const adjective = easyWords.adjectives[Math.floor(Math.random() * easyWords.adjectives.length)];
       const noun = easyWords.nouns[Math.floor(Math.random() * easyWords.nouns.length)];
       const verb = easyWords.verbs[Math.floor(Math.random() * easyWords.verbs.length)];
       const color = easyWords.colors[Math.floor(Math.random() * easyWords.colors.length)];
-      const year = Math.floor(Math.random() * 30) + 1990; // Year between 1990-2020
-      const number = Math.floor(Math.random() * 90) + 10; // Number between 10-99
+      const year = Math.floor(Math.random() * 30) + 1990;
+      const number = Math.floor(Math.random() * 90) + 10;
       const symbols = ['!', '@', '#', '$', '%', '&', '*'];
       const symbol = symbols[Math.floor(Math.random() * symbols.length)];
 
-      // Replace placeholders in the pattern
       let password = pattern
          .replace('{adjective}', adjective)
          .replace('{noun}', noun)
@@ -324,5 +491,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
       return password;
    }
-
 });
