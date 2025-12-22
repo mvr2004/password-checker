@@ -425,3 +425,101 @@ body {
 .btn-copy {
 	display: none;
 }
+
+
+
+
+/* Security Warnings - Updated Styles */
+.security-warnings {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #fff9db 0%, #ffec99 100%);
+  border: 2px solid #ffd43b;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(255, 212, 59, 0.15);
+}
+
+.security-warnings-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: #e67700;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.security-warnings-title i {
+  font-size: 1.2rem;
+}
+
+.warnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.warning-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 8px;
+  border-left: 3px solid #ffd43b;
+  transition: all 0.2s ease;
+}
+
+.warning-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateX(2px);
+}
+
+.warning-item i {
+  color: #f59e0b;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.warning-item span {
+  color: #92400e;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.warning-item strong {
+  color: #d97706;
+}
+
+/* Animação suave */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.security-warnings {
+  animation: slideIn 0.4s ease-out;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .security-warnings {
+    padding: 1rem;
+  }
+  
+  .warnings-list {
+    gap: 0.5rem;
+  }
+  
+  .warning-item {
+    padding: 0.5rem;
+  }
+}
