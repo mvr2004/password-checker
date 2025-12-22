@@ -219,6 +219,45 @@ document.addEventListener('DOMContentLoaded', function () {
       });
    });
 
+   // Toggle length slider when Easy to Remember is checked
+   easyRememberCheck.addEventListener('change', function() {
+      if (this.checked) {
+         lengthSlider.disabled = true;
+         lengthSlider.style.opacity = '0.6';
+         lengthSlider.style.cursor = 'not-allowed';
+         
+         // Also disable the character type checkboxes since pattern will determine character types
+         uppercaseCheck.disabled = true;
+         lowercaseCheck.disabled = true;
+         numbersCheck.disabled = true;
+         symbolsCheck.disabled = true;
+         
+         // Style disabled checkboxes
+         document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(cb => {
+            if (cb !== easyRememberCheck) {
+               cb.parentElement.style.opacity = '0.6';
+            }
+         });
+      } else {
+         lengthSlider.disabled = false;
+         lengthSlider.style.opacity = '1';
+         lengthSlider.style.cursor = 'pointer';
+         
+         // Re-enable character type checkboxes
+         uppercaseCheck.disabled = false;
+         lowercaseCheck.disabled = false;
+         numbersCheck.disabled = false;
+         symbolsCheck.disabled = false;
+         
+         // Restore checkbox styles
+         document.querySelectorAll('.checkbox-group input[type="checkbox"]').forEach(cb => {
+            if (cb !== easyRememberCheck) {
+               cb.parentElement.style.opacity = '1';
+            }
+         });
+      }
+   });
+
    // Main password strength checking function - 0-20 POINT SYSTEM
    function checkPasswordStrength() {
       const password = passwordInput.value;
@@ -413,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
    // Generates a password
    generateBtn.addEventListener('click', function () {
-      const length = parseInt(lengthSlider.value);
       const includeUppercase = uppercaseCheck.checked;
       const includeLowercase = lowercaseCheck.checked;
       const includeNumbers = numbersCheck.checked;
@@ -425,6 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (easyToRemember) {
          password = generateEasyPassword();
       } else {
+         const length = parseInt(lengthSlider.value);
          password = generateRandomPassword(length, includeUppercase, includeLowercase, includeNumbers, includeSymbols);
       }
 
