@@ -92,4 +92,4 @@ The checker evaluates passwords based on weighted criteria with maximum limits:
 
 <div align="center">
   
-**rds**
+**rds 2026**
